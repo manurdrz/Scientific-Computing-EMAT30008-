@@ -7,10 +7,31 @@ from shootfinal import numerical_shooting, root_finding_problem
 ###################### Equations #########################
 
 def cubic(x,params):
+    """
+    Returns the value of the cubic equation x^3 - x + c at a given value of
+    x and set of parameters.
+
+    Parameters:
+    x (float): The value of x.
+    params (dict): A dictionary containing the parameter 'c'.
+
+    Returns:
+    float: The value of the cubic equation at x.
+    """
     c = params['c']
     return x**3 - x + c
 
 def hopf(X, t, params):
+    """
+   Function that represents a Hopf bifurcation.
+
+   Parameters:
+   X (list): A list of two elements representing the values of u1 and u2
+   params (dict): A dictionary containing the parameter 'beta'.
+
+   Returns:
+   list: A list of two elements representing the values of du1/dt and du2/dt
+   """
     beta = params['beta']
     u1 = X[0]
     u2 = X[1]
@@ -21,10 +42,32 @@ def hopf(X, t, params):
     return X
     
 def pc_hopf(X0, **params):
+    """
+    Returns the value of the phase condition for the Hopf bifurcation.
+
+    Parameters:
+    X0 (list): A list of two elements representing the initial values of u1 
+               and u2, respectively.
+    **params: A dictionary of parameters to be passed to the hopf() function.
+
+    Returns:
+    float: The value of the phase condition for the Hopf bifurcation.
+    """
     pc = hopf(X0, 0, params)[0]
     return pc
   
 def modified_hopf(X, t, params):
+    """
+   Function that represents a modified Hopf bifurcation.
+
+   Parameters:
+   X (list): A list of two elements representing the values of u1 and u2
+   t (float): The current time.
+   params (dict): A dictionary containing the parameter 'beta'.
+
+   Returns:
+   list: A list of two elements representing the values of du1/dt and du2/dt
+   """
     beta = params['beta']
     u1 = X[0]
     u2 = X[1]
@@ -35,6 +78,16 @@ def modified_hopf(X, t, params):
     return X
 
 def pc_modified_hopf(X0, **params):
+    """
+   Returns the value of the phase condition for the modified Hopf bifurcation.
+
+   Parameters:
+   X0 (list): A list of two elements representing the initial values of u1 and u2
+   **params: A dictionary of parameters to be passed to the modified_hopf() function.
+
+   Returns:
+   float: The value of the phase condition for the modified Hopf bifurcation.
+   """
     pc = modified_hopf(X0, 0, params)[0]
     return pc
 
@@ -42,6 +95,24 @@ def pc_modified_hopf(X0, **params):
 ######################### Functions #######################
 
 def natural_parameter(param_list, sols, param_to_vary, function, discretisation, phase_condition, **params):
+    """
+    Computes the solution of an ODE system by natural parameter continuation.
+    
+    Parameters:
+    param_list (list):  values of the parameter to be varied.
+    sols (list): initial guesses for the solution.
+    param_to_vary (str): The name of the parameter to be varied.
+    function (function): The ODE system to be solved.
+    discretisation (function): The discretisation method to be used.
+    phase_condition (function): The phase condition to be satisfied.
+    **params: A dictionary of parameters to be passed to the function.
+    
+    Returns:
+    containing tuple: 
+        - list: A list of solutions for the ODE system.
+        - list: A list of values of the parameter at each solution.
+        - list: A list of values of T for each solution, if using numerical shooting.
+    """
     T_guess = 5
     Ts = []
 
@@ -51,7 +122,7 @@ def natural_parameter(param_list, sols, param_to_vary, function, discretisation,
 
         if discretisation == numerical_shooting:
             try:
-                X0, T = numerical_shooting(prev_sol.copy(), T_guess, function, phase_condition, **params)
+                X0, T = numerical_shooting(function, phase_condition,prev_sol.copy(), T_guess,  **params)
                 sols.append(list(X0))
                 Ts.append(T)
             except ValueError:
@@ -64,6 +135,25 @@ def natural_parameter(param_list, sols, param_to_vary, function, discretisation,
 
 
 def pseudo_arclength(param_list, param_range, sols, param_to_vary, function, discretisation, Ts, phase_condition, **params):
+    """
+    Computes the solution of an ODE system by pseudo arclength  continuation.
+    
+    Parameters:
+    param_list (list):  values of the parameter to be varied.
+    sols (list): initial guesses for the solution.
+    param_to_vary (str): The name of the parameter to be varied.
+    function (function): The ODE system to be solved.
+    discretisation (function): The discretisation method to be used.
+    Ts : (list), optional,  list of time values. 
+    phase_condition (function): The phase condition to be satisfied.
+    **params: A dictionary of parameters to be passed to the function.
+    
+    Returns:
+    containing tuple: 
+        - list: A list of solutions for the ODE system.
+        - list: A list of values of the parameter at each solution.
+        - list: A list of values of T for each solution, if using numerical shooting.
+    """
     param_list = param_list[:2].copy()
 
     def root_finding(x, *args):
@@ -112,6 +202,26 @@ def pseudo_arclength(param_list, param_range, sols, param_to_vary, function, dis
 
 def continuation(initial_u, param_to_vary, param_range, no_param_values, function, method='pseudo-arclength',
                       discretisation=None, phase_condition=None, T_guess=5, **params):
+    """
+    This function performs numerical continuation  using  pseudo continuation or 
+    natural parameter. 
+    Parameters: 
+        initial_u : (list)  initial solutions.
+    param_to_vary : str   The parameter to vary.
+    param_range : list  A list containing the minimum and maximum values of the parameter.
+    no_param_values : int  The number of parameter values to compute.
+    function : function    A function to solve.
+    method : str, optional  The method to use for the continuation analysis. Defaults to 'pseudo-arclength'.
+    discretisation : function, optional    A function that discretises the given problem. Defaults to None.
+    phase_condition : function, optional  A function that defines the phase condition. Defaults to None.
+    T_guess : float, optional    The guess for the value of T. Defaults to 5.
+    **params : dict     Additional parameters to pass to the function.
+        
+    Returns:
+    --------
+    sols : (list)   solutions.
+    param_list :(list) A list of parameter values.
+    """
     def get_discretisation(disc):
         if disc is None:
             return lambda x: x
@@ -147,8 +257,17 @@ def continuation(initial_u, param_to_vary, param_range, no_param_values, functio
 
 
 def plot_continuation_excercise_results(continuation):
+    """
+    This function plots the results of the continuation analysis.
+    Parameters:
+        continuation : (function)  The continuation function.
+        
+    
+    """ 
+    
+    
     fig, axes = plt.subplots(3, 2, figsize=(12, 12))
-
+    
     # Natural Parameter Continuation - Cubic
     u, p = continuation([1], 'c', [-2, 2], 50, cubic, method='natural-parameter', c=-2)
     axes[0, 0].plot(p, u, label='Natural')
