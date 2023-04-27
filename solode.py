@@ -5,12 +5,36 @@ import time
 ############### Equations ########################
 
 def f(x, t, args):
+    '''
+    Function representing a first-order ODE: dx/dt = x
+    Parameters:
+    x : (float) - The value of the dependent variable x at time t.
+    t : (float) - The value of the independent variable t.
+    args : (dict) - Additional arguments required for the ODE.
+    Returns:
+    dxdt :  (float) - The value of the derivative dx/dt.
+    '''
     return x
 
 def exp(t):
+    '''
+    Function representing the analytical solution of the ODE: x(t) = exp(t)
+    Returns:
+    exp_t : (float) - The value of the dependent variable x(t) at time t.
+    '''
     return np.exp(t)
 
 def g(X, t, args):
+    '''
+    Function representing a second-order ODE in the form of a system of first-order ODEs.
+    Parameters:
+    X : (list) - A list containing the dependent variables [x, y] at time t.
+    t : (float) - The value of the independent variable t.
+    args : (dict) - Additional arguments required for the ODE.
+    
+    Returns:
+    X : (list) - A list containing the derivatives [dx/dt, dy/dt].
+    '''
     x = X[0]
     y = X[1]
     dxdt = y
@@ -19,17 +43,49 @@ def g(X, t, args):
     return X
 
 def g1(t):
+    '''
+    Function representing the analytical solution of the second-order ODE as a system of first-order ODEs.
+    Parameters:
+    t : (float) - The value of the independent variable t.
+    Returns:
+    sol : (list) - A list containing the dependent variables [sin(t), cos(t)] at time t.
+    '''
     return [np.sin(t), np.cos(t)]
 
 
 ################### Steps ####################
 def euler_step(f, x, t, dt, **params):
+    '''
+    One step of the Euler method.
+    
+    Parameters: 
+    f : (function) - function containing ODE to be  solved.
+    x : (np.array) - ODE's solution at time t.
+    t : (float) - Time to evaluate .
+    dt : (float) - Stepsize 
+    **params: Any extra parameters  to evaluate  ODE.
+    
+    Returns :    
+    Xnew : (np array) - ODE's solution at t + dt    
+    '''
     dxdt = f(x,t, params)
     x_next = x + dt*np.array(dxdt)
     return x_next
 
 def RK4_step(f, x, t, dt, **params):
-
+    '''
+    One step of the fourth-order Runge-Kutta method.
+    
+    Parameters: 
+    f : (function) - function containing ODE to be solved.
+    x : (np.array) - ODE's solution at time t.
+    t : (float) - Time to evaluate.
+    dt : (float) - Stepsize.
+    **params: Any extra parameters to evaluate ODE.
+    
+    Returns :    
+    Xnew : (np.array) - ODE's solution at time t + dt.
+    '''
     k1 = np.array( f( x , t , params) )
     k2 = np.array( f( x+dt*(k1/2) , t+(dt/2) , params) )
     k3 = np.array( f( x+dt*(k2/2) , t+(dt/2) , params ) )
@@ -38,7 +94,19 @@ def RK4_step(f, x, t, dt, **params):
     return x_next
 
 def simpson38_step(f, x, t, dt, **params):
-        
+    '''
+    One step of the Simpson's 3/8 method.
+    
+    Parameters: 
+    f : (function) - function containing ODE to be solved.
+    X : (np.array) - ODE's solution at time t.
+    t : (float) - Time to evaluate.
+    dt : (float) - Stepsize.
+    **params: Any extra parameters to evaluate ODE.
+    
+    Returns :    
+    Xnew : (np array) - ODE's solution  at t + dt    
+    '''
     k1 = np.array(f(x, dt, params))
     k2 = np.array(f(x + dt* k1/3, t  + dt/3, params ))
     k3 =  np.array(f(x + dt  * (k1 /3 +k2),t + (2/3) * dt, params))
@@ -47,7 +115,19 @@ def simpson38_step(f, x, t, dt, **params):
     return x_next
 
 def midpoint_step(f, x, t, dt, **params):
+    '''
+    One step of the midpoint method.
     
+    Parameters: 
+    f : (function) - function containing ODE to be solved.
+    X : (np.array) - ODE's solution at time t.
+    t : (float) - Time to evaluate.
+    dt : (float) - step-size.
+    **params: Any extra parameters to evaluate ODE.
+    
+    Returns :    
+    Xnew : (np array) - ODE's solution   at t + dt       
+    '''
     k1 = np.array(f(x, t, params))
     k2 = np.array(f(x + (dt/2)*k1,t + dt/2, params))
     x_next = x + dt*k2
@@ -55,6 +135,23 @@ def midpoint_step(f, x, t, dt, **params):
 
 ###################### Functions ##################################
 def solve_to(f, method, t0, t1, X0,  **params):
+    """
+   Solves an ODE for an array of values at time t1 given X0 and t0 
+   
+   Parameters: 
+     f : (function) -  ODE to be solved.
+     method : Numerical method to use
+     t0 : (float) - Initial Time 
+     t1 : (float) - Final Time 
+     X0 (np.array): the initial value of solution
+     dt : (float) - Timestep.
+     **params: Any extra parameters to evaluate ODE.
+     
+     Returns :    
+     Xnew : (np array) - ODE's solution on the initial time t0 to the final 
+                        time t1. The function returns the solution at time t1.
+   """
+    
     try:
         dt_max = params['dt_max']
     except KeyError:
@@ -71,6 +168,20 @@ def solve_to(f, method, t0, t1, X0,  **params):
     return X
 
 def solve_ode(method, f, t, X0, use_method_dict=True, **params):
+    """
+   Solves an ODE from an initial value, t_0 to a final value t_end
+   
+   Parameters:
+       method :(str or function) Numerical method to use
+       f : (function)  The ODE to be solved
+       t_values : (array) time values 
+       X0 : (numpy array) The initial value of solution
+       use_method_dict : (bool) if True, use a dictionary to map the method 
+                                   name to the corresponding function
+       **params: any extra parameters to be passed to the ODE function.
+   Returns:
+       X : (numpy array) The solution array
+     """
     if use_method_dict:
         method_dict = {
             'euler': euler_step,
@@ -110,6 +221,19 @@ def solve_ode(method, f, t, X0, use_method_dict=True, **params):
 
 ######################### Plots ###########################
 def plot_solution(t, X, xlabel='t', ylabel='x', title='Solution', X_true=None):
+    """
+    Plots the solution to the ODE as a function of time with the specified 
+    labels and title. If X_true is specified, the true solution is plotted.
+    
+    Parameters:
+    t: (np.array) an array of time values.
+    X: (np.array) an array of solved values.
+    xlabel: (str)  the label for the x-axis.
+    ylabel: (str)  the label for the y-axis.
+    title: (str)  the title for the plot.
+    X_true: (np.array)  an array of true solutions (optional).
+
+    """
     if len(X.shape) <= 1:
         number_of_vars = 1
         if X_true is not None:
@@ -134,6 +258,21 @@ def plot_solution(t, X, xlabel='t', ylabel='x', title='Solution', X_true=None):
 
 
 def plot_error(methods, f, t0, t1, X0, X1_true, show_plot=True, **params):
+    """
+    The function plots the error vs. the time step for each numerical method 
+    specified in methods.
+
+    Parameters: 
+    methods: (list of str or function): a list of numerical methods to be compared.
+    f: (function) the ODE function to be solved.
+    t0 :(float) the initial time.
+    t1 : (float) the final time.
+    X0: (np.array) the initial value of solution(s)
+    X1_true: (np.array) an array of true dsolutions at the final time.
+    show_plot: (bool) if True, show the plot; if False, only return the data.
+    **params: any extra parameters to be passed to the ODE function.
+    """
+
     method_errors = []
     X1_true = np.array(X1_true).transpose()
 
@@ -165,6 +304,21 @@ def plot_error(methods, f, t0, t1, X0, X1_true, show_plot=True, **params):
 
 
 def desired_tolerance(methods, f, t0, t1, X0, X_true, desired_tol, **params):
+    """
+    The function finds the minimum time step required to reach the desired 
+    tolerance for each numerical method specified. 
+    
+    Parameters: 
+    - methods (list of str or function): a list of numerical methods to be compared.
+    - f (function): the ODE function to be solved.
+    - t0 (float): the initial time.
+    - t1 (float): the final time.
+    - X0 (np.array): the initial value of the dependent variable(s).
+    - X_true (np.array): an array of true dependent variable values at the final time.
+    - desired_tol (float): the desired tolerance for the error.
+    - **params: any extra parameters to be passed to the ODE function.
+
+     """
     dt_line = np.full(200,[desired_tol])
     method_errors, hs = plot_error(methods, f, t0, t1, X0, X_true, show_plot=False, **params)
     
