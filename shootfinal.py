@@ -50,7 +50,7 @@ def pc_predator_prey(X0, **params):
 ################## Function ##########################
 
 def root_finding_problem(X0, *data):
-    """
+   """
    Returns the output of the root-finding problem that needs to be solved
    to obtain the initial conditions and period of a periodic orbit in an ODE 
    system.
@@ -62,24 +62,25 @@ def root_finding_problem(X0, *data):
 
    Returns: 
    output: (numpy.array)  The output of the root-finding problem.
-   """
-    T = X0[-1]    
-    X0 = X0[:-1]    
-    t = np.linspace(0, T, 3)    
+    
+    """
+   
+   T = X0[-1]    
+   X0 = X0[:-1]    
+   t = np.linspace(0, T, 3)    
 
-    f, phase_condition, params = data if len(data) == 3 else data + (None,)
-
-    if params is not None:
+   f, phase_condition, params = data if len(data) == 3 else data + (None,)
+   if params is not None:
         solution = solve_ode('rk4', f, t, X0, **params)
-    else:
+   else:
         solution = solve_ode('rk4', f, t, X0)
 
-    if params is not None:
+   if params is not None:
         output = np.append(X0 - solution[-1, :], phase_condition(X0, **params))
-    else:
+   else:
         output = np.append(X0 - solution[-1, :], phase_condition(X0))
 
-    return output
+   return output
 
 
 
