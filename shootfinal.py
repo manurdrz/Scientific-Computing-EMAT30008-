@@ -7,6 +7,17 @@ import matplotlib.pyplot as plt
 ############### Equations ########################
 
 def predator_prey(X, t, params):
+    """
+    Predator-prey ODE
+    
+    Parameters:
+    X : (list)  initial conditions.
+    t : (float) The time to evaluate
+    params : (dict)  model parameters.
+    
+    Returns: 
+    X: (list) Gradients computed for given values   
+    """
     a = params['a']
     b = params['b']
     d = params['d']
@@ -21,14 +32,37 @@ def predator_prey(X, t, params):
     return X
 
 def pc_predator_prey(X0, **params):
+    """
+    Predator-prey ODE phase condition. I.E : dx/dt = 0 at t=0
     
-    dxdt_at_0 = predator_prey(X0, 0, params)[0]
+    Parameters:
+    X0 : (list)  initial conditions.
+    params : any parameters to be included in ODE
     
-    return dxdt_at_0
+    Returns: 
+    dxdt_0 : (list) Gradient at t = 0 
+    """
+    
+    dxdt_0 = predator_prey(X0, 0, params)[0]
+    
+    return dxdt_0
 
 ################## Function ##########################
 
 def root_finding_problem(X0, *data):
+    """
+   Returns the output of the root-finding problem that needs to be solved
+   to obtain the initial conditions and period of a periodic orbit in an ODE 
+   system.
+   
+   Parameters:
+       X0 : (list)   initial conditions.
+      data : (tuple) tuple of arguments containing  function, phase condition, 
+                     and the model parameters.
+
+   Returns: 
+   output: (numpy.array)  The output of the root-finding problem.
+   """
     T = X0[-1]    
     X0 = X0[:-1]    
     t = np.linspace(0, T, 3)    
@@ -49,7 +83,21 @@ def root_finding_problem(X0, *data):
 
 
 
-def numerical_shooting(X0, T_guess, f, phase_condition, **params):
+def numerical_shooting(f, phase_condition, X0, T_guess,  **params):
+    """
+   Returns the initial conditions and period of a periodic orbit in an ODE 
+   system using the numerical shooting method.
+   
+   Parameters: 
+   f : (function) The ODE system.
+   phase_condition : (function) function that takes the initial conditions 
+   and returns the values of some specific variable(s) at the end of the time 
+   interval.
+   X0 : (list) initial conditions.
+   T_guess : (float)  initial guess for the period of the periodic orbit.
+   params : any parameters.
+       
+   """
     X0_with_T = X0.copy()
     X0_with_T.append(T_guess)
 
@@ -70,6 +118,13 @@ def numerical_shooting(X0, T_guess, f, phase_condition, **params):
 #################### PLOTS ############################
 
 def compare_b_values(b1, b2):
+    """
+   Compare the solutions of the predator-prey model for different values of parameter b.
+
+   Parameters:
+   b1 (float): the lower bound of b
+   b2 (float): the upper bound of b
+   """
 
     t_eval = np.linspace(0, 100, 10000)
     deltat_max = 0.001
@@ -109,6 +164,17 @@ def compare_b_values(b1, b2):
 
     
 def plot_orbit(X0, T, f, title, **params):
+    """
+   Plot the solution of an ODE for given initial conditions and parameters.
+
+   Parameters:
+   X0 :  the initial conditions of the ODE
+   T : (float) the time duration of the simulation
+   f : (function) the function defining the ODE
+   title:  (str) the title of the plot
+   **params: the parameters of the ODE function
+
+   """
     t = np.linspace(0, T, 1000)
     X = solve_ode('rk4', f, t, X0, **params, h_max=0.001)
     x_data, y_data = X[:, 0], X[:, 1]
@@ -124,6 +190,23 @@ def plot_orbit(X0, T, f, title, **params):
 
 
 def find_time_period(func, a, b, d, X0, t_span=(0, 200), t_eval_resolution=20000001, slice_indices=(10000000, 14000001), round_precision=3):
+    """
+    Find the time period of a periodic solution of an ODE.
+
+      Parameters:
+      func (function): the function defining the ODE
+      a (float): the value of parameter a
+      b (float): the value of parameter b
+      d (float): the value of parameter d
+      X0 (array-like): the initial conditions of the ODE
+      t_span (tuple): the time span of the simulation (default (0, 200))
+      t_eval_resolution (int): the number of time steps used in the simulation (default 20000001)
+      slice_indices (tuple): the indices of the time array used to slice the solution and find the period (default (10000000, 14000001))
+      round_precision (int): the number of decimal places used to round the solution values (default 3)
+    
+      Returns:
+      float: the time period of the periodic solution, rounded to 5 decimal places
+      """
     t_eval = np.linspace(t_span[0], t_span[1], t_eval_resolution)
     
     sol = solve_ivp(lambda t, X: func(X, t, {'a': a, 'b': b, 'd': d}), t_span, X0, t_eval=t_eval)
@@ -172,16 +255,11 @@ def main():
 
     compare_b_values(0.1, 0.5)
 
-    X0, T = numerical_shooting([1.3, 1.3], 10, predator_prey, pc_predator_prey, a=1, b=0.2, d=0.1)
-
-    # The numerical shooting function returns X0 which contains the initial conditions for the periodic orbit and 
-    # T which is the period of the periodic orbit. To visualise this solution, the plot_orbit function can be used.
+    X0, T = numerical_shooting(predator_prey, pc_predator_prey,[1.6, 1.6], 10,  a=1, b=0.25, d=0.1)
 
     plot_orbit(X0, T, predator_prey, 'Periodic Orbit', a=1, b=0.2, d=0.1)
-
-    # # This method can be used to find periodic orbits in ODE systems with arbitrary dimensions.
     
-    # Example usage
+
     a = 1
     d = 0.2
     b = 0.23
