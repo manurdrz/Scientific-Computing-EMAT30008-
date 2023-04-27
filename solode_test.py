@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import solode  # Assuming the provided code is in a file named "solode.py"
+import solode  
 
 class TestODESolver(unittest.TestCase):
 
