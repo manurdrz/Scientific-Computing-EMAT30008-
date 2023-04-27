@@ -6,6 +6,26 @@ from matplotlib.animation import FuncAnimation
 from scipy.optimize import fsolve
 from mpl_toolkits.mplot3d import Axes3D
 
+##################### Functions ########################
+
+def initial_condition_1(x):
+        return np.sin(np.pi * x)
+    
+def initial_condition_2(x):
+        L = 1.0
+        return x * (L - x)
+    
+def boundary_condition(t):
+       return 0, 0
+    
+    # Define the diffusion coefficient functio
+def diffusion_coefficient(x):
+        return 1
+    
+    # Define the right-hand side (RHS) function
+def rhs_function(x, t):
+        return 0
+
 ###################### METHODS  ##################################
 
 
@@ -220,7 +240,7 @@ def pde_solver(L, T, Nx, Nt, initial_condition, boundary_condition, diffusion_co
     plt.show()
     return u
 
-def visualize_solution(solution_matrix, final_space_value, final_time_value):
+def visualise_solution(solution_matrix, final_space_value, final_time_value):
     num_of_x, num_of_t = solution_matrix.shape
     x_values = np.linspace(0, final_space_value, num_of_x)
     t_values = np.linspace(0, final_time_value, num_of_t)
@@ -237,23 +257,6 @@ def visualize_solution(solution_matrix, final_space_value, final_time_value):
 #########################################
 def main():
 
-    def initial_condition_1(x):
-        return np.sin(np.pi * x)
-
-    def initial_condition_2(x):
-        L = 1.0
-        return x * (L - x)
-    
-    def boundary_condition(t):
-       return 0, 0
-    
-    # Define the diffusion coefficient function
-    def diffusion_coefficient(x):
-        return 1
-    
-    # Define the right-hand side (RHS) function
-    def rhs_function(x, t):
-        return 0
 
     # Example 1: Forward Euler with variable diffusion coefficient and non-homogeneous RHS function
     Nx1 = 100
@@ -262,7 +265,7 @@ def main():
     T1 = 0.1
 
     solution_matrix_1 = pde_solver(L1, T1, Nx1, Nt1, initial_condition_1, boundary_condition, diffusion_coefficient, rhs_function)
-    visualize_solution(solution_matrix_1, L1, T1)
+    visualise_solution(solution_matrix_1, L1, T1)
 
     plt.plot(np.linspace(0, L1, Nx1 + 1), solution_matrix_1[0])
     plt.xlabel('x')
@@ -275,15 +278,29 @@ def main():
     Nt2 = 100
     L2 = 1
     T2 = 0.1
-
+    
     solution_matrix_2 = pde_solver(L2, T2, Nx2, Nt2, initial_condition_2, boundary_condition, diffusion_coefficient, rhs_function)
-    visualize_solution(solution_matrix_2, L2, T2)
+    visualise_solution(solution_matrix_2, L2, T2)
 
     plt.plot(np.linspace(0, L2, Nx2 + 1), solution_matrix_2[0])
     plt.xlabel('x')
     plt.ylabel('u(x,t)')
     plt.title('Line plot at final time (Example 2)')
     plt.show()
+        
+    def initial_condition(x):
+        return np.sin(np.pi * x / L)
     
+    def boundary_condition(t):
+        return 0, 0
+    
+    L = 10
+    T = 2
+    Nx = 50
+    Nt = 1000
+    k = 0.01
+    
+    solution_matrix = pde_solver(L1, T1, Nx1, Nt1, initial_condition_1, boundary_condition, diffusion_coefficient, rhs_function)
+        
 if __name__ == '__main__':
     main()
