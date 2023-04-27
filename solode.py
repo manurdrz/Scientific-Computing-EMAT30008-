@@ -93,26 +93,6 @@ def RK4_step(f, x, t, dt, **params):
     x_next = x +  dt * (k1 + (2*k2) + (2*k3) + k4) / 6
     return x_next
 
-def simpson38_step(f, x, t, dt, **params):
-    '''
-    One step of the Simpson's 3/8 method.
-    
-    Parameters: 
-    f : (function) - function containing ODE to be solved.
-    X : (np.array) - ODE's solution at time t.
-    t : (float) - Time to evaluate.
-    dt : (float) - Stepsize.
-    **params: Any extra parameters to evaluate ODE.
-    
-    Returns :    
-    Xnew : (np array) - ODE's solution  at t + dt    
-    '''
-    k1 = np.array(f(x, dt, params))
-    k2 = np.array(f(x + dt* k1/3, t  + dt/3, params ))
-    k3 =  np.array(f(x + dt  * (k1 /3 +k2),t + (2/3) * dt, params))
-    k4 = np.array(f(x + dt*(k1 -k2 +k3), t + dt,params))
-    x_next= x + dt* (k1 + 3*k2 + 3*k3 + k4)/8     
-    return x_next
 
 def midpoint_step(f, x, t, dt, **params):
     '''
@@ -131,6 +111,33 @@ def midpoint_step(f, x, t, dt, **params):
     k1 = np.array(f(x, t, params))
     k2 = np.array(f(x + (dt/2)*k1,t + dt/2, params))
     x_next = x + dt*k2
+    return x_next
+
+
+def heun3_step(f,x,t,dt, **params):
+    '''
+    One step Heun 3rd order method.
+
+   Parameters: 
+   f : (function) - function containing ODE to be solved.
+   X : (np.array) - ODE's solution at time t.
+   t : (float) - Time to evaluate.
+   dt : (float) - step-size.
+   
+   Returns :    
+   Xnew : (np array) - ODE's solution   at t + dt  
+    
+    Example
+    -------     
+    Xnew = heun3_step(X=1, t=0, h=0.1, f)
+    '''
+    # calculate Xnew using formula
+    k1 = dt*np.array(f(x, t, params))
+    k2 = dt*np.array(f(x+(k1/3), t+(dt/3), params))
+    k3 = dt*np.array(f(x+(2*(k2/3)), t+(2*(dt/3)), params))
+
+    x_next = x + k1/4 + 3*k3/4
+    
     return x_next
 
 ###################### Functions ##################################
@@ -186,8 +193,8 @@ def solve_ode(method, f, t, X0, use_method_dict=True, **params):
         method_dict = {
             'euler': euler_step,
             'rk4': RK4_step,
-            'simpson': simpson38_step,
             'midpoint': midpoint_step,
+            'heun3': heun3_step 
         }
 
         if method in method_dict:
@@ -199,8 +206,8 @@ def solve_ode(method, f, t, X0, use_method_dict=True, **params):
             method_func = euler_step
         elif method == 'rk4':
             method_func = RK4_step
-        elif method == 'simpson':
-            method_func = simpson38_step
+        elif method == 'heun3':
+            method_func = heun3_step
         elif method == 'midpoint':
             method_func = midpoint_step
         else:
@@ -365,7 +372,7 @@ def main():
     X = solve_ode('midpoint', g, t, X0) 
     plot_solution(t, X[:,0], 'x', 'y', 'Second order ODE', g1(t))
     plot_solution(X[:,0], X[:,1], 'x', 'y', 'y against x')
-    methods = ['euler', 'rk4', 'simpson', 'midpoint']
+    methods = ['euler', 'rk4', 'heun3', 'midpoint']
     method_errors, hs = plot_error(methods, g, 0, 1, np.array([0,1]), np.array([np.sin(1), np.cos(1)]))
     desired_tol = 1e-3
     desired_tolerance(methods, f, 0, 1, [1], exp(1), desired_tol)
