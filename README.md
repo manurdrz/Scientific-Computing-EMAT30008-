@@ -1,5 +1,5 @@
 # Scientific-Computing-EMAT30008-
-Manuel Rodriguez de Guzman
+
 
 This unit brings together previous experience of programming, numerical techniques and mathematical methods, with the aim of enabling me to put scientific programming into practice in a project/research setting. The approach is practical rather than theoretical and will cover the techniques and skills needed to do real scientific programming for a range of commonly occurring problem types.
 
